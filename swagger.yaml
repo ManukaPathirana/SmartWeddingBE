@@ -1,0 +1,135 @@
+openapi: 3.0.0
+info:
+  title: Smart Wedding Backend API
+  version: 1.0.0
+  description: API documentation for the Smart Wedding Backend
+servers:
+  - url: http://localhost:5000
+paths:
+  /api/weddings:
+    post:
+      summary: Create a new wedding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                event_date:
+                  type: string
+                  format: date
+              required:
+                - title
+                - event_date
+      responses:
+        '201':
+          description: Wedding created
+        '400':
+          description: Bad request
+    
+  /api/weddings/{slug}:
+    get:
+      summary: Get wedding by slug
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Wedding found
+        '404':
+          description: Not found
+
+  /api/guests/bulk:
+    post:
+      summary: Add multiple guests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                wedding_id:
+                  type: integer
+                guests:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      email:
+                        type: string
+                      phone:
+                        type: string
+              required:
+                - wedding_id
+                - guests
+      responses:
+        '201':
+          description: Guests added
+        '400':
+          description: Bad request
+
+  /api/guests/{token}:
+    get:
+      summary: Get guest by token
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Guest found
+        '404':
+          description: Not found
+
+  /api/rsvp:
+    post:
+      summary: Submit RSVP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                attending:
+                  type: boolean
+                guest_count:
+                  type: integer
+                message:
+                  type: string
+              required:
+                - token
+                - attending
+      responses:
+        '201':
+          description: RSVP submitted
+        '400':
+          description: Bad request
+
+  /api/rsvp/{wedding_id}:
+    get:
+      summary: Get RSVPs for a wedding
+      parameters:
+        - in: path
+          name: wedding_id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of RSVPs
+        '404':
+          description: Not found
