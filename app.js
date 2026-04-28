@@ -1,3 +1,5 @@
+// Swagger UI setup
+// ...existing code...
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -11,7 +13,11 @@ const app = express();
 
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+
 app.use(express.json());
 console.log('CORS and JSON middleware enabled');
 
@@ -20,10 +26,15 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 console.log('Swagger UI available at /api-docs');
 
 // Routes
+
 const weddingRoutes = require('./routes/weddingRoutes');
 const guestRoutes = require('./routes/guestRoutes');
 const rsvpRoutes = require('./routes/rsvpRoutes');
+const userRoutes = require('./routes/userRoutes');
 
+
+console.log('Mounting /api/users routes');
+app.use('/api/users', userRoutes);
 console.log('Mounting /api/weddings routes');
 app.use('/api/weddings', weddingRoutes);
 console.log('Mounting /api/guests routes');

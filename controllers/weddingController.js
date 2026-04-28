@@ -7,25 +7,24 @@ function generateSlug(title) {
 
 // POST /api/weddings
 exports.createWedding = async (req, res) => {
-  const { title, event_date } = req.body;
-  if (!title || !event_date) {
-    return res.status(400).json({ error: 'Title and event_date are required' });
+  const { event_date } = req.body;
+  const username = req.user && req.user.username;
+  if (!username || !event_date) {
+    return res.status(400).json({ error: 'Username (from login) and event_date are required' });
   }
-  const slug = generateSlug(title);
   try {
     const pool = await db.connect();
-    // Check for duplicate slug
+    // Check for duplicate wedding for this username
     const check = await pool.request()
-      .input('slug', db.sql.NVarChar, slug)
-      .query('SELECT id FROM Weddings WHERE slug = @slug');
+      .input('username', db.sql.NVarChar, username)
+      .query('SELECT id FROM Weddings WHERE username = @username');
     if (check.recordset.length > 0) {
-      return res.status(409).json({ error: 'Wedding with this slug already exists' });
+      return res.status(409).json({ error: 'Wedding for this user already exists' });
     }
     const result = await pool.request()
-      .input('title', db.sql.NVarChar, title)
-      .input('slug', db.sql.NVarChar, slug)
+      .input('username', db.sql.NVarChar, username)
       .input('event_date', db.sql.Date, event_date)
-      .query(`INSERT INTO Weddings (title, slug, event_date) OUTPUT INSERTED.* VALUES (@title, @slug, @event_date)`);
+      .query(`INSERT INTO Weddings (username, event_date) OUTPUT INSERTED.* VALUES (@username, @event_date)`);
     res.status(201).json(result.recordset[0]);
   } catch (err) {
     res.status(500).json({ error: 'Server error', details: err.message });

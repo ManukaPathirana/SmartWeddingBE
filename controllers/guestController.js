@@ -3,12 +3,27 @@ const { nanoid } = require('nanoid');
 
 // POST /api/guests/bulk
 exports.bulkAddGuests = async (req, res) => {
-  const { wedding_id, guests } = req.body;
-  if (!wedding_id || !Array.isArray(guests) || guests.length === 0) {
-    return res.status(400).json({ error: 'wedding_id and guests array are required' });
+  const { username, guests } = req.body;
+  if (!username || !Array.isArray(guests) || guests.length === 0) {
+    return res.status(400).json({ error: 'username and guests array are required' });
   }
   try {
     const pool = await db.connect();
+    // Check if username exists
+    const userResult = await pool.request()
+      .input('username', db.sql.NVarChar, username)
+      .query('SELECT id FROM Users WHERE username = @username');
+    if (userResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    // Get wedding for this user
+    const weddingResult = await pool.request()
+      .input('username', db.sql.NVarChar, username)
+      .query('SELECT id FROM Weddings WHERE username = @username');
+    if (weddingResult.recordset.length === 0) {
+      return res.status(404).json({ error: 'Wedding not found for this user' });
+    }
+    const wedding_id = weddingResult.recordset[0].id;
     const results = [];
     for (const g of guests) {
       const token = nanoid(12);

@@ -6,9 +6,10 @@ info:
 servers:
   - url: http://localhost:5000
 paths:
-  /api/weddings:
+  /api/users/signup:
     post:
-      summary: Create a new wedding
+      summary: User signup
+      description: Register a new user account
       requestBody:
         required: true
         content:
@@ -16,20 +17,90 @@ paths:
             schema:
               type: object
               properties:
-                title:
+                name:
                   type: string
+                address:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                mobile:
+                  type: string
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+              required:
+                - name
+                - address
+                - email
+                - mobile
+                - username
+                - password
+      responses:
+        '201':
+          description: User created
+        '400':
+          description: Bad request
+        '409':
+          description: Username or email already exists
+
+  /api/users/login:
+    post:
+      summary: User login
+      description: Login with username and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                  format: password
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Login successful
+        '400':
+          description: Bad request
+        '401':
+          description: Invalid username or password
+
+  /api/weddings:
+    post:
+      summary: Create a new wedding
+      description: Requires authentication. The username must exist in the Users table.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Username of the wedding owner (must exist in Users table)
                 event_date:
                   type: string
                   format: date
               required:
-                - title
+                - username
                 - event_date
       responses:
         '201':
           description: Wedding created
         '400':
           description: Bad request
-    
+        '404':
+          description: User not found
+
   /api/weddings/{slug}:
     get:
       summary: Get wedding by slug
